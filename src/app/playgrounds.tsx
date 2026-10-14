@@ -14,9 +14,16 @@ import {
   View,
 } from 'react-native';
 import { PlaygroundMap, type MapMessage, type PlaygroundMapHandle } from '@/components/PlaygroundMap';
+import { SampleMap } from '@/components/SampleMap';
 import { config } from '@/constants/config';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { samplePlaygrounds } from '@/data/samplePlaygrounds';
 import { distanceKm, findPlaygrounds, type FoundPlayground } from '@/lib/overpass';
+
+// The web preview uses a drawn sample map and sample playgrounds, so it works
+// without location, map tiles or playground data services.
+const PREVIEW = config.previewMode;
+const MapView = PREVIEW ? SampleMap : PlaygroundMap;
 
 type Coords = { latitude: number; longitude: number };
 
@@ -53,6 +60,11 @@ export default function PlaygroundsScreen() {
 
   // Find the user, falling back to Chemainus if they say no.
   useEffect(() => {
+    if (PREVIEW) {
+      setLocating(false);
+      setOrigin(config.defaultCenter);
+      return;
+    }
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -87,6 +99,12 @@ export default function PlaygroundsScreen() {
     setLoading(true);
     setError(false);
     setMovedTo(null);
+    if (PREVIEW) {
+      setResults(all ? samplePlaygrounds : samplePlaygrounds.filter((p) => p.access !== 'unknown'));
+      setFit(true);
+      setLoading(false);
+      return;
+    }
     try {
       const found = await findPlaygrounds({ ...at, radiusKm: km, includeAll: all, signal: controller.signal });
       setResults(found);
@@ -154,7 +172,7 @@ export default function PlaygroundsScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.mapWrap}>
-        <PlaygroundMap ref={map} initialCenter={config.defaultCenter} onMessage={onMapMessage} />
+        <MapView ref={map} initialCenter={config.defaultCenter} onMessage={onMapMessage} />
         {movedTo && !loading ? (
           <Pressable style={styles.searchHere} onPress={searchHere} accessibilityRole="button">
             <MaterialCommunityIcons name="map-search-outline" size={18} color={colors.white} />
@@ -197,7 +215,11 @@ export default function PlaygroundsScreen() {
       </View>
 
       {!user && !locating ? (
-        <Text style={styles.notice}>Turn on location to see playgrounds near you. Showing the Cowichan Valley.</Text>
+        <Text style={styles.notice}>
+          {PREVIEW
+            ? 'Preview: sample playgrounds. The real app uses your location to find playgrounds near you.'
+            : 'Turn on location to see playgrounds near you. Showing the Cowichan Valley.'}
+        </Text>
       ) : null}
 
       <FlatList

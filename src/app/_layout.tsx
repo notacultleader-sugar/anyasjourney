@@ -10,15 +10,18 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { Tabs } from 'expo-router/js-tabs';
+import * as Haptics from 'expo-haptics';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts } from '@/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const insets = useSafeAreaInsets();
   const [loaded, error] = useFonts({
     PlayfairDisplay_400Regular,
     PlayfairDisplay_700Bold,
@@ -37,15 +40,23 @@ export default function RootLayout() {
     <>
       <StatusBar style="dark" />
       <Tabs
+        screenListeners={{
+          tabPress: () => {
+            if (Platform.OS !== 'web') Haptics.selectionAsync();
+          },
+        }}
         screenOptions={{
           tabBarActiveTintColor: colors.gold,
           tabBarInactiveTintColor: colors.nav,
-          tabBarLabelStyle: { fontFamily: fonts.bodyMedium, fontSize: 12, lineHeight: 16 },
+          tabBarLabelStyle: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 15 },
           tabBarStyle: {
             backgroundColor: colors.white,
             borderTopColor: colors.border,
-            ...(Platform.OS === 'web' ? { height: 62, paddingBottom: 6 } : null),
+            // The web build needs a little extra room for labels and the home bar.
+            ...(Platform.OS === 'web' ? { height: 60 + insets.bottom, paddingBottom: 6 + insets.bottom } : null),
           },
+          // Native-style slide between tabs.
+          animation: 'shift',
           headerTitleStyle: { fontFamily: fonts.heading, fontSize: 20, color: colors.heading },
           headerStyle: { backgroundColor: colors.white },
           headerShadowVisible: false,
@@ -75,6 +86,7 @@ export default function RootLayout() {
           name="playgrounds"
           options={{
             title: 'Playgrounds',
+            tabBarLabel: 'Parks',
             headerTitle: 'Accessible Playgrounds',
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="map-marker-radius" color={color} size={size} />

@@ -52,6 +52,13 @@ The game is free to play with no paid entries, and donations never change the dr
 
 Every push to `main` builds the web version and publishes it to GitHub Pages at https://notacultleader-sugar.github.io/anyasjourney/ (workflow: `.github/workflows/web-preview.yml`). Pages must be turned on once, under Settings → Pages → Source: **GitHub Actions**.
 
+The preview is set up to feel like the phone app (`public/index.html`, `public/manifest.json`):
+- On a computer it shows the app inside a phone frame.
+- On a phone, "Add to Home Screen" installs it with the app icon and opens it full screen, without browser bars.
+- Text selection, scrollbars, tap highlights and page bounce are turned off.
+
+The app icons in `assets/` and `public/icons/` are a gold "AJ" placeholder until the charity sends its logo.
+
 ## Running it
 
 ```bash

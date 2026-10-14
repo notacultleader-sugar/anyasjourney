@@ -29,7 +29,13 @@
       "expo-font",
       "expo-web-browser",
       "expo-splash-screen",
-      "expo-image"
+      "expo-image",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Anya's Journey uses your location to show accessible playgrounds near you."
+        }
+      ]
     ],
     "scheme": "anyasjourney",
     "splash": {
@@ -38,7 +44,8 @@
       "backgroundColor": "#ffffff"
     },
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "baseUrl": "/anyasjourney"
     }
   }
 }

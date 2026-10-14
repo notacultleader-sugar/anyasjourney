@@ -32,6 +32,16 @@ export const config = {
     updated: '',
   },
 
+  // Playground finder: free OpenStreetMap services, no API keys.
+  overpassEndpoints: [
+    'https://overpass-api.de/api/interpreter',
+    'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+  ],
+  mapStyleUrl: 'https://tiles.openfreemap.org/styles/liberty',
+  // Used when the user doesn't share their location (Chemainus, BC).
+  defaultCenter: { latitude: 48.925, longitude: -123.716 },
+  searchRadiusKm: 25,
+
   storyUrl: `${SITE}/mystory.html`,
   lssUrl: 'https://www.lambshaffer.org',
 

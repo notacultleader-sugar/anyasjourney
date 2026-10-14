@@ -13,6 +13,7 @@ import { Tabs } from 'expo-router/js-tabs';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { colors, fonts } from '@/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -40,7 +41,11 @@ export default function RootLayout() {
           tabBarActiveTintColor: colors.gold,
           tabBarInactiveTintColor: colors.nav,
           tabBarLabelStyle: { fontFamily: fonts.bodyMedium, fontSize: 12, lineHeight: 16 },
-          tabBarStyle: { backgroundColor: colors.white, borderTopColor: colors.border },
+          tabBarStyle: {
+            backgroundColor: colors.white,
+            borderTopColor: colors.border,
+            ...(Platform.OS === 'web' ? { height: 62, paddingBottom: 6 } : null),
+          },
           headerTitleStyle: { fontFamily: fonts.heading, fontSize: 20, color: colors.heading },
           headerStyle: { backgroundColor: colors.white },
           headerShadowVisible: false,
@@ -63,6 +68,16 @@ export default function RootLayout() {
             title: 'Events',
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="calendar-star" color={color} size={size} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="playgrounds"
+          options={{
+            title: 'Playgrounds',
+            headerTitle: 'Accessible Playgrounds',
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="map-marker-radius" color={color} size={size} />
             ),
           }}
         />

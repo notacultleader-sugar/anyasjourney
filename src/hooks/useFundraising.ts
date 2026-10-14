@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { config } from '@/constants/config';
+import { fetchSiteTotals } from '@/lib/siteThermometer';
 
 export type Fundraising = {
   title: string;
@@ -20,6 +21,18 @@ export function useFundraising() {
 
   const refresh = useCallback(async () => {
     setLoading(true);
+    // First choice: the CauseVox thermometer on the homepage.
+    try {
+      const totals = await fetchSiteTotals();
+      if (totals) {
+        setData({ ...config.fundraisingFallback, ...totals });
+        setIsLive(true);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // try the JSON file next
+    }
     try {
       const res = await fetch(`${config.fundraisingUrl}?t=${Date.now()}`, {
         headers: { 'Cache-Control': 'no-cache' },
@@ -31,6 +44,8 @@ export function useFundraising() {
       setIsLive(true);
     } catch {
       setIsLive(false);
+      // The web preview can't read the charity's site, so show sample figures.
+      if (config.previewMode) setData({ ...config.fundraisingFallback, raised: 185000, goal: 500000 });
     } finally {
       setLoading(false);
     }

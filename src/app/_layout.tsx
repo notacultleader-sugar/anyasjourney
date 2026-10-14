@@ -13,15 +13,18 @@ import { Tabs } from 'expo-router/js-tabs';
 import * as Haptics from 'expo-haptics';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { colors, fonts } from '@/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
+  const [showLoader, setShowLoader] = useState(true);
+  const hideLoader = useCallback(() => setShowLoader(false), []);
   const [loaded, error] = useFonts({
     PlayfairDisplay_400Regular,
     PlayfairDisplay_700Bold,
@@ -113,6 +116,7 @@ export default function RootLayout() {
           }}
         />
       </Tabs>
+      {showLoader ? <LoadingScreen onDone={hideLoader} /> : null}
     </>
   );
 }

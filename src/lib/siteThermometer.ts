@@ -1,49 +1,36 @@
-// Finds the fundraising thermometer (the CauseVox embed) on the charity's
-// homepage, so the app shows exactly what the website shows. When the charity
-// updates the thermometer on the site, the app picks it up with no new release.
-//
-// The same finder runs inside the native WebView (as injected JS) and in the
-// web build (on fetched HTML), so keep it plain ES5.
-export const FIND_THERMOMETER_JS = `
-function __findThermometer(doc) {
-  var el = doc.getElementById('thermometer');
-  if (!el) {
-    var nodes = doc.querySelectorAll('[class*="causevox"], [id*="causevox"], iframe[src*="causevox"], img[src*="causevox"], a[href*="causevox"]');
-    if (nodes.length) el = nodes[0];
-  }
-  if (!el) {
-    var hs = doc.querySelectorAll('h1,h2,h3,h4,h5,h6');
-    for (var i = 0; i < hs.length; i++) {
-      if (/fundraising\\s+goal/i.test(hs[i].textContent || '')) { el = hs[i]; break; }
-    }
-  }
-  if (!el) return null;
-  return (el.closest && el.closest('section')) || el.parentElement || el;
-}
-`;
+import { config } from '@/constants/config';
 
-// Native: runs in a WebView that has loaded the homepage. Strips the page down
-// to the thermometer and reports its height.
-export const ISOLATE_THERMOMETER_JS = `
-(function () {
-  ${FIND_THERMOMETER_JS}
-  function post(m) { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(m)); }
-  function run() {
-    var section = __findThermometer(document);
-    if (!section) { post({ type: 'missing' }); return; }
-    document.body.innerHTML = '';
-    document.body.appendChild(section);
-    var css = document.createElement('style');
-    css.innerHTML = 'html,body{margin:0!important;padding:0!important;background:transparent!important;overflow:hidden!important}' +
-      'body>*{margin:0!important;padding-top:8px!important;padding-bottom:8px!important}' +
-      '#header,#footer,.back-to-top{display:none!important}';
-    document.head.appendChild(css);
-    window.scrollTo(0, 0);
-    setTimeout(function () { post({ type: 'height', height: document.body.scrollHeight }); }, 300);
+// Keeps the app's thermometer in step with the one on the charity's website.
+// Reads "raised" and "goal" dollar amounts from the thermometer section of the
+// homepage HTML. Returns null if the numbers aren't in the page (for example if
+// the embed draws them inside an image or frame).
+export function parseTotals(html: string): { raised: number; goal: number } | null {
+  // Prefer the section's id, then the CauseVox embed, then the last "Fundraising
+  // Goal" text (earlier ones are usually menu links).
+  let start = html.search(/id=["']thermometer["']/i);
+  if (start < 0) start = html.search(/causevox/i);
+  if (start < 0) {
+    const all = [...html.matchAll(/fundraising\s+goal/gi)];
+    start = all.length ? all[all.length - 1].index ?? -1 : -1;
   }
-  // Give the embed a moment to draw after the page loads.
-  if (document.readyState === 'complete') setTimeout(run, 1200);
-  else window.addEventListener('load', function () { setTimeout(run, 1200); });
-})();
-true;
-`;
+  if (start < 0) return null;
+  const text = html
+    .slice(start, start + 6000)
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ');
+  const amounts = [...text.matchAll(/\$\s?(\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{2})?\s*(k|K)?/g)].map(
+    (m) => Number(m[1].replace(/,/g, '')) * (m[2] ? 1000 : 1),
+  );
+  if (amounts.length < 2) return null;
+  const goal = Math.max(...amounts);
+  const raised = amounts.find((a) => a !== goal) ?? 0;
+  return goal > 0 ? { raised, goal } : null;
+}
+
+export async function fetchSiteTotals() {
+  const res = await fetch(`${config.siteUrl}/?t=${Date.now()}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseTotals(await res.text());
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { config } from '@/constants/config';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { formatCurrency } from '@/data/equipment';
 import { useFundraising } from '@/hooks/useFundraising';
@@ -47,7 +48,9 @@ export function Thermometer({ compact = false }: { compact?: boolean }) {
                   ? data.updated
                     ? `Updated ${data.updated} · tap to refresh`
                     : 'Tap to refresh'
-                  : "Couldn't load the latest total · tap to retry"}
+                  : config.previewMode
+                    ? 'Sample figures (preview)'
+                    : "Couldn't load the latest total · tap to retry"}
               </Text>
             </Pressable>
           )}

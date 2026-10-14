@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SiteThermometer } from '@/components/SiteThermometer';
+import { Thermometer } from '@/components/Thermometer';
 import { Body, Button, Card, SectionHeading } from '@/components/ui';
 import { config } from '@/constants/config';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
@@ -25,7 +25,7 @@ function sponsor(item: EquipmentItem) {
 export default function DonateScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <SiteThermometer />
+      <Thermometer />
 
       <View style={styles.block}>
         <SectionHeading eyebrow="Give today" title="Donate online" />

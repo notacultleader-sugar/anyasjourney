@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
-import { config } from '@/constants/config';
 import { colors, fonts, spacing } from '@/constants/theme';
 import { formatCurrency } from '@/data/equipment';
 import { useFundraising } from '@/hooks/useFundraising';
+import { CauseVoxThermometer, GoalHeading } from './CauseVoxThermometer';
 
 const MIN_MS = 2200; // long enough to watch the fill
 const MAX_WAIT_MS = 2500; // stop waiting for the total and fill to what we have
@@ -47,30 +47,25 @@ export function LoadingScreen({ onDone }: { onDone: () => void }) {
     return () => fill.removeListener(listener);
   }, [target, fill, fade, onDone]);
 
-  const TUBE = 260;
-  const height = fill.interpolate({ inputRange: [0, 1], outputRange: [0, TUBE] });
   const pctText = target ? Math.round(Math.min(1, target.raised / target.goal) * 100) : 0;
+  const shownPct = target ? Math.round(Math.min(1, shown / target.goal) * 100) : 0;
 
   return (
     <Animated.View style={[StyleSheet.absoluteFill, styles.screen, { opacity: fade }]} pointerEvents="none">
       <Text style={styles.name}>Anya's Journey</Text>
       <Text style={styles.tag}>Playgrounds for everyone</Text>
 
-      <View style={styles.thermo} accessible accessibilityLabel={`${pctText}% of the fundraising goal raised`}>
-        <View style={[styles.tube, { height: TUBE }]}>
-          {[0.25, 0.5, 0.75].map((m) => (
-            <View key={m} style={[styles.tick, { bottom: TUBE * m }]} />
-          ))}
-          <Animated.View style={[styles.fill, { height }]} />
-        </View>
-        <View style={styles.bulb} />
+      <View accessible accessibilityLabel={`${pctText}% of the fundraising goal raised`} style={styles.thermo}>
+        <GoalHeading scale={0.85}>{target ? `GOAL: ${formatCurrency(target.goal)}` : ' '}</GoalHeading>
+        <View style={{ height: spacing.md }} />
+        <CauseVoxThermometer
+          progress={fill}
+          pctLabel={`${shownPct}%`}
+          amountLabel={formatCurrency(shown)}
+          scale={0.85}
+        />
       </View>
-
-      <Text style={styles.raised}>{target ? formatCurrency(shown) : ' '}</Text>
-      <Text style={styles.goal}>
-        {target ? `raised of ${formatCurrency(target.goal)} · ${pctText}%` : 'Loading…'}
-      </Text>
-      {target && !isLive && config.previewMode ? <Text style={styles.note}>Sample figures (preview)</Text> : null}
+      {target ? null : <Text style={styles.note}>Loading…</Text>}
     </Animated.View>
   );
 }
@@ -92,28 +87,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     marginBottom: spacing.xl,
   },
-  thermo: { alignItems: 'center', marginBottom: spacing.lg },
-  tube: {
-    width: 40,
-    borderRadius: 20,
-    borderWidth: 4,
-    borderColor: colors.gold,
-    backgroundColor: colors.goldPale,
-    justifyContent: 'flex-end',
-    overflow: 'hidden',
-  },
-  tick: { position: 'absolute', right: 0, width: 12, height: 2, backgroundColor: colors.goldLight },
-  fill: { width: '100%', backgroundColor: colors.gold },
-  bulb: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.gold,
-    marginTop: -14,
-    borderWidth: 4,
-    borderColor: colors.gold,
-  },
-  raised: { fontFamily: fonts.heading, fontSize: 36, color: colors.heading },
-  goal: { fontFamily: fonts.body, fontSize: 15, color: colors.text, marginTop: spacing.xs },
+  thermo: { alignItems: 'center' },
   note: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: spacing.sm },
 });

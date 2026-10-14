@@ -32,7 +32,7 @@ export const config = {
   fundraisingFallback: {
     title: 'Fuller Lake Inclusive Playground',
     goal: 500000,
-    raised: 0,
+    raised: 128420, // matches the website's thermometer on 2026-10-14
     updated: '',
   },
 

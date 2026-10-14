@@ -44,8 +44,8 @@ export function useFundraising() {
       setIsLive(true);
     } catch {
       setIsLive(false);
-      // The web preview can't read the charity's site, so show sample figures.
-      if (config.previewMode) setData({ ...config.fundraisingFallback, raised: 185000, goal: 500000 });
+      // Couldn't reach the site: keep the last known total from config.
+      setData(config.fundraisingFallback);
     } finally {
       setLoading(false);
     }

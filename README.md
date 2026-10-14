@@ -9,12 +9,28 @@ Mobile app for [Anya's Journey Foundation](https://www.anyasjourney.com), built 
 | **Home** | Logo, photos, Anya's story, the mission, a compact fundraising thermometer, an LSS explainer and social links | `src/data/story.ts`, with photos loaded from the website |
 | **Events** | Announcements and upcoming events in an in-app browser window | `https://www.anyasjourney.com/events.html`, live |
 | **Playgrounds** | Map and list of accessible playgrounds near the user, with filters for accessibility, directions and a "Search this area" button | OpenStreetMap through the free Overpass API, shown on an OpenFreeMap map. No API keys are needed. |
+| **Survivor** | The Wine Survivor play-along game: back a tribe, pick who goes home each draw, rally donations, and Loser Round trivia. Greyed out behind a "Next date" panel while the game is off | `wine-survivor.json` on the website, with a fallback in `src/data/wineSurvivor.ts` |
 | **Donate** | Full fundraising thermometer, GoFundMe and GiveSendGo buttons, playground equipment to sponsor with prices, plus other ways to give | Thermometer: `fundraising.json` on the website. Equipment: `src/data/equipment.ts` |
 
 ## Updating content without an app update
 
 - **Events:** edit `events.html` on the website as usual. The app shows the page live, with the site's own header and footer hidden.
 - **Thermometer:** upload `docs/fundraising.json` to `https://www.anyasjourney.com/app/fundraising.json` and change the numbers whenever the total moves. Until that file exists, the app shows the fallback in `src/constants/config.ts` and a "couldn't load" note.
+
+## Running Wine Survivor
+
+Upload `docs/wine-survivor.json` to `https://www.anyasjourney.com/app/wine-survivor.json` and edit it during the event. No app update is needed.
+
+- **Turn the game on or off:** set `"active"` to `true` or `false`. While it's off, the tab shows the game greyed out with `nextDate` and `nextDateNote` over it.
+- **Tribes:** one entry per in-person team. `status` is `"in"`, `"immune"` or `"out"`. `rally` is the dollars donated for that tribe (donors add "Rally: tribe name" to their donation note).
+- **Draws:** add one per draw with `"status": "open"` so people can pick who goes home. Set it to `"closed"` when the draw starts, then list the knocked-out tribe ids in `eliminated`.
+- **Trivia** (optional): a `trivia` list of `{ "question", "options", "answer" }` replaces the built-in Loser Round questions. `answer` is the position of the right option, counting from 0.
+
+Without the file, the app uses the built-in defaults in `src/data/wineSurvivor.ts`, where `active` is `false`, so shipping an app update with that set to `true` also turns the game on.
+
+Picks, the tribe someone backs and trivia scores are saved on each phone only. A shared leaderboard for picks and push alerts on draw night would need a small backend.
+
+The game is free to play with no paid entries, and donations never change the draw, which keeps it outside BC gaming licensing. See `wine-survivor-game.md` in the project files for the reasoning.
 
 ## Setup still needed
 
@@ -23,6 +39,7 @@ Mobile app for [Anya's Journey Foundation](https://www.anyasjourney.com), built 
 - [ ] Set the real fundraising goal (in `fundraising.json` and in the fallback)
 - [ ] Add the charity logo as the app icon and splash image (`assets/icon.png`, `assets/splash-icon.png`, `assets/android-icon-foreground.png`)
 - [ ] Have the charity review the story text in `src/data/story.ts`
+- [ ] Get the Wine Survivor 4.0 dates and team list, and upload `wine-survivor.json`
 
 ## Playground finder
 

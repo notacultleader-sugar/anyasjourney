@@ -42,6 +42,10 @@ export const config = {
   defaultCenter: { latitude: 48.925, longitude: -123.716 },
   searchRadiusKm: 25,
 
+  // Wine Survivor play-along game: on/off switch, next date, tribes and draw
+  // results. See docs/wine-survivor.json for the format.
+  wineSurvivorUrl: `${SITE}/app/wine-survivor.json`,
+
   storyUrl: `${SITE}/mystory.html`,
   lssUrl: 'https://www.lambshaffer.org',
 

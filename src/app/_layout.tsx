@@ -82,6 +82,16 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
+          name="wine-survivor"
+          options={{
+            title: 'Wine Survivor',
+            tabBarLabel: 'Survivor',
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="glass-wine" color={color} size={size} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="donate"
           options={{
             title: 'Donate',

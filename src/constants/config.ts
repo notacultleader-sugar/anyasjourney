@@ -62,10 +62,11 @@ export const config = {
   donate: {
     goFundMe: 'https://www.gofundme.com/u/anyasjourney',
     payPal: 'https://paypal.me/anyasjourney',
-    // The charity's PayPal account email (or merchant ID). Equipment donations
-    // open PayPal with the amount AND the item filled in. Set to '' to fall back
-    // to the paypal.me link above, which only takes the amount.
-    payPalBusiness: 'contact@anyasjourney.com',
+    // TODO: the charity's PayPal account email (or merchant ID), once the app is
+    // approved. When set, equipment donations open PayPal with the amount AND
+    // the item filled in. While empty, they open a placeholder checkout screen
+    // in the app that shows the same thing and sends no money.
+    payPalBusiness: '',
     canadaHelps: 'https://www.canadahelps.org/en/charities/anyas-journey-foundation/',
     eTransferEmail: 'donations@anyasjourney.com',
   },

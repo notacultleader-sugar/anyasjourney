@@ -12,14 +12,14 @@ const open = (url: string) => WebBrowser.openBrowserAsync(url);
 function sponsor(item: EquipmentItem) {
   const message = `Thank you! Donate ${formatCurrency(item.price)} and add "${item.name}" in your donation note so we know what you're sponsoring.`;
   if (Platform.OS === 'web') {
-    open(config.donate.goFundMe);
+    open(config.donate.canadaHelps);
     return;
   }
   Alert.alert(`Sponsor a ${item.name}`, message, [
+    { text: 'CanadaHelps', onPress: () => open(config.donate.canadaHelps) },
+    { text: 'PayPal', onPress: () => open(config.donate.payPal) },
     { text: 'GoFundMe', onPress: () => open(config.donate.goFundMe) },
-    { text: 'GiveSendGo', onPress: () => open(config.donate.giveSendGo) },
-    { text: 'Cancel', style: 'cancel' },
-  ]);
+  ], { cancelable: true });
 }
 
 export default function DonateScreen() {
@@ -34,8 +34,9 @@ export default function DonateScreen() {
           amount are welcome.
         </Body>
         <View style={styles.buttons}>
-          <Button label="Donate on GoFundMe" icon="heart-outline" onPress={() => open(config.donate.goFundMe)} />
-          <Button label="Donate on GiveSendGo" icon="gift-outline" variant="dark" onPress={() => open(config.donate.giveSendGo)} />
+          <Button label="Donate on CanadaHelps" icon="heart-outline" onPress={() => open(config.donate.canadaHelps)} />
+          <Button label="Credit card with PayPal" icon="credit-card-outline" variant="dark" onPress={() => open(config.donate.payPal)} />
+          <Button label="Donate on GoFundMe" icon="hand-heart-outline" variant="outline" onPress={() => open(config.donate.goFundMe)} />
         </View>
       </View>
 
@@ -67,19 +68,15 @@ export default function DonateScreen() {
       </View>
 
       <Card style={styles.block}>
-        <Text style={styles.otherTitle}>Other ways to give</Text>
-        <Body>
-          E-transfer to {config.donate.eTransferEmail}, or give through CanadaHelps. Charitable tax receipts are
-          available.
-        </Body>
+        <Text style={styles.otherTitle}>E-transfer</Text>
+        <Body>Send an Interac e-Transfer to {config.donate.eTransferEmail}.</Body>
         <View style={styles.buttons}>
           <Button
-            label="E-transfer details"
+            label="Email for e-transfer details"
             variant="outline"
             icon="email-outline"
             onPress={() => Linking.openURL(`mailto:${config.donate.eTransferEmail}`)}
           />
-          <Button label="CanadaHelps" variant="outline" icon="open-in-new" onPress={() => open(config.donate.canadaHelps)} />
         </View>
       </Card>
     </ScrollView>

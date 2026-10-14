@@ -22,10 +22,11 @@ function rally(tribe: Tribe) {
     `Rally for ${tribe.name}`,
     `Thank you! Add "Rally: ${tribe.name}" in your donation note so we can count it toward their Rally Fund. Donations go to the Fuller Lake playground and never change the draw.`,
     [
+      { text: 'CanadaHelps', onPress: () => open(config.donate.canadaHelps) },
+      { text: 'PayPal', onPress: () => open(config.donate.payPal) },
       { text: 'GoFundMe', onPress: () => open(config.donate.goFundMe) },
-      { text: 'GiveSendGo', onPress: () => open(config.donate.giveSendGo) },
-      { text: 'Cancel', style: 'cancel' },
     ],
+    { cancelable: true },
   );
 }
 

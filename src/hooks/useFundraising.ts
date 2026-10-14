@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { config } from '@/constants/config';
+import { fetchSheetTotals } from '@/lib/fundraisingSheet';
 import { fetchSiteTotals } from '@/lib/siteThermometer';
 
 export type Fundraising = {
@@ -21,17 +22,20 @@ export function useFundraising() {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    // First choice: the CauseVox thermometer on the homepage.
-    try {
-      const totals = await fetchSiteTotals();
-      if (totals) {
-        setData({ ...config.fundraisingFallback, ...totals });
-        setIsLive(true);
-        setLoading(false);
-        return;
+    // First choice: the charity's Google Sheet. Then the CauseVox thermometer
+    // on the homepage.
+    for (const source of [fetchSheetTotals, fetchSiteTotals]) {
+      try {
+        const totals = await source();
+        if (totals) {
+          setData({ ...config.fundraisingFallback, ...totals });
+          setIsLive(true);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // try the next source, then the JSON file
       }
-    } catch {
-      // try the JSON file next
     }
     try {
       const res = await fetch(`${config.fundraisingUrl}?t=${Date.now()}`, {

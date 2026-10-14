@@ -10,7 +10,7 @@ Mobile app for [Anya's Journey Foundation](https://www.anyasjourney.com), built 
 | **Events** | Announcements and upcoming events in an in-app browser window | `https://www.anyasjourney.com/events.html`, live |
 | **Playgrounds** | Map and list of accessible playgrounds near the user, with filters for accessibility, directions and a "Search this area" button | OpenStreetMap through the free Overpass API, shown on an OpenFreeMap map. No API keys are needed. |
 | **Survivor** | The Wine Survivor play-along game: back a tribe, pick who goes home each draw, rally donations, and Loser Round trivia. Greyed out behind a "Next date" panel while the game is off | `wine-survivor.json` on the website, with a fallback in `src/data/wineSurvivor.ts` |
-| **Donate** | Full fundraising thermometer, GoFundMe and GiveSendGo buttons, playground equipment to sponsor with prices, plus other ways to give | Thermometer: `fundraising.json` on the website. Equipment: `src/data/equipment.ts` |
+| **Donate** | Full fundraising thermometer, CanadaHelps, PayPal and GoFundMe buttons (the same options as the website), playground equipment to sponsor with prices, plus other ways to give | Thermometer: `fundraising.json` on the website. Equipment: `src/data/equipment.ts` |
 
 ## Updating content without an app update
 
@@ -34,7 +34,6 @@ The game is free to play with no paid entries, and donations never change the dr
 
 ## Setup still needed
 
-- [ ] Replace the GiveSendGo placeholder link in `src/constants/config.ts`
 - [ ] Replace the placeholder equipment and prices in `src/data/equipment.ts`
 - [ ] Set the real fundraising goal (in `fundraising.json` and in the fallback)
 - [ ] Add the charity logo as the app icon and splash image (`assets/icon.png`, `assets/splash-icon.png`, `assets/android-icon-foreground.png`)

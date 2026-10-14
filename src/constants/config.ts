@@ -24,6 +24,11 @@ export const config = {
   // posts new events on the website and they appear in the app straight away.
   eventsUrl: `${SITE}/events.html`,
 
+  // Fundraising thermometer, first choice: the charity's Google Sheet,
+  // published to the web as CSV (File > Share > Publish to web > CSV).
+  // Paste the link here. See docs/fundraising-sheet.md.
+  fundraisingSheetCsvUrl: '',
+
   // Fundraising thermometer: a small JSON file the charity uploads to their
   // website. See docs/fundraising.json for the format.
   fundraisingUrl: `${SITE}/app/fundraising.json`,
@@ -53,10 +58,10 @@ export const config = {
   storyUrl: `${SITE}/mystory.html`,
   lssUrl: 'https://www.lambshaffer.org',
 
+  // Same donation options as the website's Donations section.
   donate: {
     goFundMe: 'https://www.gofundme.com/u/anyasjourney',
-    // TODO: replace with the charity's GiveSendGo campaign link.
-    giveSendGo: 'https://www.givesendgo.com/',
+    payPal: 'https://paypal.me/anyasjourney',
     canadaHelps: 'https://www.canadahelps.org/en/charities/anyas-journey-foundation/',
     eTransferEmail: 'donations@anyasjourney.com',
   },

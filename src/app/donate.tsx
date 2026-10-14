@@ -34,14 +34,14 @@ export default function DonateScreen() {
       <View style={styles.block}>
         <SectionHeading eyebrow="Sponsor equipment" title="Build the playground" />
         <Body>
-          Choose a piece of playground equipment to sponsor. We'll copy its name so you can paste it into your
-          donation message.
+          Choose a piece of playground equipment to sponsor. You'll donate through PayPal with the amount
+          ready to go.
         </Body>
         <Text style={styles.placeholder}>Items and prices shown are placeholders.</Text>
         {equipment.map((item) => (
           <Pressable
             key={item.id}
-            onPress={() => setRequest({ note: `Sponsoring: ${item.name}`, amount: item.price })}
+            onPress={() => setRequest({ note: `Sponsoring: ${item.name}`, amount: item.price, payPalOnly: true })}
             accessibilityRole="button"
             accessibilityLabel={`Sponsor ${item.name}, ${formatCurrency(item.price)}`}
             style={({ pressed }) => [styles.item, pressed && { backgroundColor: colors.goldPale }]}

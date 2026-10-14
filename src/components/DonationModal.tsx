@@ -14,6 +14,8 @@ export type DonationRequest = {
   amount?: number;
   /** Heading; defaults to "Your item has been copied to your clipboard" */
   title?: string;
+  /** Send this donation to PayPal only, with the amount and note filled in */
+  payPalOnly?: boolean;
 };
 
 type Site = 'canadaHelps' | 'payPal' | 'goFundMe';
@@ -23,17 +25,38 @@ const sites: { key: Site; label: string }[] = [
   { key: 'goFundMe', label: 'GoFundMe' },
 ];
 
-function siteUrl(site: Site, amount?: number) {
-  // PayPal is the only one that takes the amount in its link.
-  if (site === 'payPal' && amount) return `${config.donate.payPal}/${amount}CAD`;
+// PayPal's donate page can be opened with the amount and what it's for
+// already filled in, once we know the charity's PayPal account.
+export const payPalPrefills = !!config.donate.payPalBusiness;
+
+function payPalUrl(note: string, amount?: number) {
+  if (payPalPrefills) {
+    const q = [
+      `business=${encodeURIComponent(config.donate.payPalBusiness)}`,
+      `item_name=${encodeURIComponent(note)}`,
+      'currency_code=CAD',
+      ...(amount ? [`amount=${amount}`] : []),
+    ].join('&');
+    return `https://www.paypal.com/donate/?${q}`;
+  }
+  return amount ? `${config.donate.payPal}/${amount}CAD` : config.donate.payPal;
+}
+
+function siteUrl(site: Site, request: DonationRequest) {
+  if (site === 'payPal') return payPalUrl(request.note, request.amount);
   return config.donate[site];
 }
 
-// Full-screen pop-up shown before a donation page opens. The donation sites
-// can't have their message box filled in from a link, so this copies the note
-// for the donor and gives them copy buttons for the note and the amount.
+// Full-screen pop-up shown before a donation page opens. It copies the note
+// for the donor and gives them copy buttons for the note and the amount, since
+// most donation sites can't have their message box filled in from a link.
+// Equipment donations go to PayPal only, which can be (see payPalPrefills).
 export function DonationModal({ request, onClose }: { request: DonationRequest | null; onClose: () => void }) {
-  const [site, setSite] = useState<Site>('canadaHelps');
+  const [chosen, setSite] = useState<Site>('canadaHelps');
+  const payPalOnly = !!request?.payPalOnly;
+  const site: Site = payPalOnly ? 'payPal' : chosen;
+  // Nothing for the donor to paste when PayPal fills everything in.
+  const prefilled = payPalOnly && payPalPrefills;
   const [copied, setCopied] = useState<'note' | 'amount' | null>(null);
 
   useEffect(() => {
@@ -49,7 +72,7 @@ export function DonationModal({ request, onClose }: { request: DonationRequest |
 
   const go = () => {
     if (!request) return;
-    WebBrowser.openBrowserAsync(siteUrl(site, request.amount));
+    WebBrowser.openBrowserAsync(siteUrl(site, request));
     onClose();
   };
 
@@ -59,15 +82,31 @@ export function DonationModal({ request, onClose }: { request: DonationRequest |
     <Modal visible={!!request} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" style={styles.close} hitSlop={12}>
+          <Pressable
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            style={styles.close}
+            hitSlop={12}
+          >
             <MaterialCommunityIcons name="close" size={24} color={colors.muted} />
           </Pressable>
           <ScrollView contentContainerStyle={styles.content} bounces={false}>
             <View style={styles.badge}>
-              <MaterialCommunityIcons name="clipboard-check-outline" size={44} color={colors.gold} />
+              <MaterialCommunityIcons
+                name={prefilled ? 'hand-heart-outline' : 'clipboard-check-outline'}
+                size={44}
+                color={colors.gold}
+              />
             </View>
-            <Text style={styles.title}>{request?.title ?? 'Your item has been copied to your clipboard'}</Text>
-            <Text style={styles.subtitle}>Don't forget to paste it in your message on the donation screen.</Text>
+            <Text style={styles.title}>
+              {prefilled ? 'Thank you!' : (request?.title ?? 'Your item has been copied to your clipboard')}
+            </Text>
+            <Text style={styles.subtitle}>
+              {prefilled
+                ? 'PayPal will open with your donation amount and what it is for already filled in.'
+                : "Don't forget to paste it in your message on the donation screen."}
+            </Text>
 
             {request ? (
               <>
@@ -88,21 +127,25 @@ export function DonationModal({ request, onClose }: { request: DonationRequest |
               </>
             ) : null}
 
-            <Text style={styles.label}>Donate with</Text>
-            <View style={styles.sites}>
-              {sites.map((s) => (
-                <Pressable
-                  key={s.key}
-                  onPress={() => setSite(s.key)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: site === s.key }}
-                  style={[styles.site, site === s.key && styles.siteOn]}
-                >
-                  <Text style={[styles.siteText, site === s.key && styles.siteTextOn]}>{s.label}</Text>
-                </Pressable>
-              ))}
-            </View>
-            {site === 'payPal' && request?.amount ? (
+            {payPalOnly ? null : (
+              <>
+                <Text style={styles.label}>Donate with</Text>
+                <View style={styles.sites}>
+                  {sites.map((s) => (
+                    <Pressable
+                      key={s.key}
+                      onPress={() => setSite(s.key)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: site === s.key }}
+                      style={[styles.site, site === s.key && styles.siteOn]}
+                    >
+                      <Text style={[styles.siteText, site === s.key && styles.siteTextOn]}>{s.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            )}
+            {site === 'payPal' && request?.amount && !prefilled ? (
               <Text style={styles.hint}>PayPal opens with the amount filled in.</Text>
             ) : null}
           </ScrollView>
@@ -121,7 +164,17 @@ export function DonationModal({ request, onClose }: { request: DonationRequest |
   );
 }
 
-function Field({ label, value, copied, onCopy }: { label: string; value: string; copied: boolean; onCopy: () => void }) {
+function Field({
+  label,
+  value,
+  copied,
+  onCopy,
+}: {
+  label: string;
+  value: string;
+  copied: boolean;
+  onCopy: () => void;
+}) {
   return (
     <View style={styles.field}>
       <View style={{ flex: 1 }}>
@@ -159,7 +212,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     overflow: 'hidden',
   },
-  close: { position: 'absolute', top: spacing.md, right: spacing.md, zIndex: 1 },
+  close: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    zIndex: 1,
+  },
   content: { padding: spacing.lg, paddingTop: spacing.xl },
   badge: {
     alignSelf: 'center',
@@ -171,7 +229,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  title: { fontFamily: fonts.heading, fontSize: 26, lineHeight: 34, color: colors.heading, textAlign: 'center' },
+  title: {
+    fontFamily: fonts.heading,
+    fontSize: 26,
+    lineHeight: 34,
+    color: colors.heading,
+    textAlign: 'center',
+  },
   subtitle: {
     fontFamily: fonts.body,
     fontSize: 16,
@@ -192,8 +256,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     backgroundColor: colors.section,
   },
-  label: { fontFamily: fonts.bodyMedium, fontSize: 12, letterSpacing: 1, color: colors.gold, textTransform: 'uppercase' },
-  value: { fontFamily: fonts.bodyBold, fontSize: 17, color: colors.heading, marginTop: 2 },
+  label: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 12,
+    letterSpacing: 1,
+    color: colors.gold,
+    textTransform: 'uppercase',
+  },
+  value: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 17,
+    color: colors.heading,
+    marginTop: 2,
+  },
   copy: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -217,8 +292,17 @@ const styles = StyleSheet.create({
   siteOn: { borderColor: colors.gold, backgroundColor: colors.goldPale },
   siteText: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.text },
   siteTextOn: { color: colors.heading },
-  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: spacing.sm },
-  ok: { backgroundColor: colors.gold, paddingVertical: spacing.md, alignItems: 'center' },
+  hint: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.muted,
+    marginTop: spacing.sm,
+  },
+  ok: {
+    backgroundColor: colors.gold,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
   okText: { fontFamily: fonts.bodyBold, fontSize: 20, color: colors.white },
   okSub: { fontFamily: fonts.body, fontSize: 13, color: colors.white },
 });

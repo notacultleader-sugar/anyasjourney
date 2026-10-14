@@ -59,8 +59,9 @@ export function mapHtml(center: { latitude: number; longitude: number }) {
     return 2 * R * Math.asin(Math.sqrt(h));
   }
 
-  map.on('moveend', function () {
-    if (programmaticMove) { programmaticMove = false; return; }
+  map.on('moveend', function (e) {
+    // Only offer "Search this area" after the person moves the map.
+    if (!e.originalEvent || programmaticMove) return;
     var c = map.getCenter();
     send({ type: 'moved', latitude: c.lat, longitude: c.lng, radiusKm: radiusKm() });
   });
@@ -85,7 +86,7 @@ export function mapHtml(center: { latitude: number; longitude: number }) {
     }
     if (d.fit && !bounds.isEmpty()) {
       markProgrammatic();
-      map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 600 });
+      map.fitBounds(bounds, { padding: { top: 80, bottom: 56, left: 48, right: 64 }, maxZoom: 14, duration: 600 });
     }
   }
 

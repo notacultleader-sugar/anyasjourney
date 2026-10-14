@@ -151,19 +151,10 @@ export default function PlaygroundsScreen() {
     map.current?.send({ type: 'center', latitude: p.latitude, longitude: p.longitude, zoom: 15 });
   };
 
-  if (!origin) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.gold} />
-        <Text style={styles.muted}>{locating ? 'Finding your location…' : 'Loading…'}</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.screen}>
       <View style={styles.mapWrap}>
-        <PlaygroundMap ref={map} initialCenter={origin} onMessage={onMapMessage} />
+        <PlaygroundMap ref={map} initialCenter={config.defaultCenter} onMessage={onMapMessage} />
         {movedTo && !loading ? (
           <Pressable style={styles.searchHere} onPress={searchHere} accessibilityRole="button">
             <MaterialCommunityIcons name="map-search-outline" size={18} color={colors.white} />
@@ -187,7 +178,9 @@ export default function PlaygroundsScreen() {
 
       <View style={styles.toolbar}>
         <Text style={styles.count}>
-          {loading
+          {!origin
+            ? 'Finding your location…'
+            : loading
             ? 'Searching…'
             : `${sorted.length} ${sorted.length === 1 ? 'playground' : 'playgrounds'} within ${Math.round(radiusKm)} km`}
         </Text>
@@ -214,12 +207,12 @@ export default function PlaygroundsScreen() {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         onScrollToIndexFailed={() => {}}
         ListEmptyComponent={
-          loading ? (
+          loading || !origin ? (
             <ActivityIndicator color={colors.gold} style={{ marginTop: spacing.xl }} />
           ) : error ? (
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>We couldn't reach the map data</Text>
-              <Pressable onPress={() => search(origin, radiusKm, includeAll)}>
+              <Pressable onPress={() => origin && search(origin, radiusKm, includeAll)}>
                 <Text style={styles.link}>Try again</Text>
               </Pressable>
             </View>

@@ -7,6 +7,10 @@ const SITE = 'https://www.anyasjourney.com';
 export const config = {
   siteUrl: SITE,
 
+  // Set by the GitHub Pages preview build only (EXPO_PUBLIC_PREVIEW=1), so the
+  // preview can show features the charity hasn't switched on yet.
+  previewMode: process.env.EXPO_PUBLIC_PREVIEW === '1',
+
   images: {
     logo: `${SITE}/assets/img/logo.png`,
     hero: `${SITE}/assets/img/me.jpg`,

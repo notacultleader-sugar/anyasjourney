@@ -26,6 +26,8 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
       - run: npx expo export --platform web
+        env:
+          EXPO_PUBLIC_PREVIEW: '1'
       # Single-page app: send unknown paths back to the app.
       - run: cp dist/index.html dist/404.html && touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v3

@@ -1,36 +1,21 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
-import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { DonationModal, type DonationRequest } from '@/components/DonationModal';
 import { Thermometer } from '@/components/Thermometer';
 import { Body, Button, Card, SectionHeading } from '@/components/ui';
 import { config } from '@/constants/config';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
-import { equipment, formatCurrency, type EquipmentItem } from '@/data/equipment';
+import { equipment, formatCurrency } from '@/data/equipment';
 
 const open = (url: string) => WebBrowser.openBrowserAsync(url);
 
-// The donation sites don't let us fill in their message box, so we copy the
-// note for the donor to paste. PayPal does take the amount in its link.
-function sponsor(item: EquipmentItem) {
-  const note = `Sponsoring: ${item.name}`;
-  Clipboard.setStringAsync(note).catch(() => {});
-  const payPal = `${config.donate.payPal}/${item.price}CAD`;
-  const message = `We've copied "${note}" for you. Paste it into the message box when you donate so the charity knows what you're sponsoring.`;
-  if (Platform.OS === 'web') {
-    open(payPal);
-    return;
-  }
-  Alert.alert(`Sponsor a ${item.name} · ${formatCurrency(item.price)}`, message, [
-    { text: 'CanadaHelps', onPress: () => open(config.donate.canadaHelps) },
-    { text: 'PayPal', onPress: () => open(payPal) },
-    { text: 'GoFundMe', onPress: () => open(config.donate.goFundMe) },
-  ], { cancelable: true });
-}
-
 export default function DonateScreen() {
+  const [request, setRequest] = useState<DonationRequest | null>(null);
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <DonationModal request={request} onClose={() => setRequest(null)} />
       <Thermometer />
 
       <View style={styles.block}>
@@ -56,7 +41,7 @@ export default function DonateScreen() {
         {equipment.map((item) => (
           <Pressable
             key={item.id}
-            onPress={() => sponsor(item)}
+            onPress={() => setRequest({ note: `Sponsoring: ${item.name}`, amount: item.price })}
             accessibilityRole="button"
             accessibilityLabel={`Sponsor ${item.name}, ${formatCurrency(item.price)}`}
             style={({ pressed }) => [styles.item, pressed && { backgroundColor: colors.goldPale }]}

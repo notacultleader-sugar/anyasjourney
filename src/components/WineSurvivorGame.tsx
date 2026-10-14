@@ -1,8 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Clipboard from 'expo-clipboard';
-import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { DonationModal, type DonationRequest } from '@/components/DonationModal';
 import { Body, Button, Card, SectionHeading } from '@/components/ui';
 import { config } from '@/constants/config';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
@@ -10,29 +9,13 @@ import { formatCurrency } from '@/data/equipment';
 import type { Tribe, TriviaQuestion, WineSurvivor } from '@/data/wineSurvivor';
 import { useStoredState } from '@/hooks/useStoredState';
 
-const open = (url: string) => WebBrowser.openBrowserAsync(url);
 
 // Rally donations go through the same donation pages as the rest of the app;
 // the note tells the charity which tribe to credit.
-function rally(tribe: Tribe) {
-  const note = `Rally: ${tribe.name}`;
-  Clipboard.setStringAsync(note).catch(() => {});
-  const message = `Thank you! We've copied "${note}" for you. Paste it into the message box when you donate so we can count it toward their Rally Fund. Donations go to the Fuller Lake playground and never change the draw.`;
-  if (Platform.OS === 'web') {
-    open(config.donate.payPal);
-    return;
-  }
-  Alert.alert(
-    `Rally for ${tribe.name}`,
-    message,
-    [
-      { text: 'CanadaHelps', onPress: () => open(config.donate.canadaHelps) },
-      { text: 'PayPal', onPress: () => open(config.donate.payPal) },
-      { text: 'GoFundMe', onPress: () => open(config.donate.goFundMe) },
-    ],
-    { cancelable: true },
-  );
-}
+const rallyRequest = (tribe: Tribe): DonationRequest => ({
+  note: `Rally: ${tribe.name}`,
+  title: 'Your rally note has been copied to your clipboard',
+});
 
 const statusLabel = { in: 'Still in', immune: 'Immune', out: 'Voted off' } as const;
 
@@ -56,6 +39,7 @@ type Props = {
 export function WineSurvivorGame({ data, preview = false, loading, isLive, onRefresh }: Props) {
   const [backedId, setBackedId] = useStoredState<string | null>('ws.backedTribe', null);
   const [picks, setPicks] = useStoredState<Record<string, string>>('ws.picks', {});
+  const [rally, setRally] = useState<DonationRequest | null>(null);
 
   const backed = data.tribes.find((t) => t.id === backedId);
   const openDraw = data.draws.find((d) => d.status === 'open' && d.eliminated.length === 0);
@@ -65,6 +49,7 @@ export function WineSurvivorGame({ data, preview = false, loading, isLive, onRef
 
   return (
     <View>
+      <DonationModal request={rally} onClose={() => setRally(null)} />
       <View style={styles.hero}>
         <MaterialCommunityIcons name="glass-wine" size={36} color={colors.gold} />
         <Text style={styles.heroTitle}>{data.edition}</Text>
@@ -92,7 +77,7 @@ export function WineSurvivorGame({ data, preview = false, loading, isLive, onRef
           <Card style={styles.backedCard}>
             <StatusPill status={backed.status} />
             <Text style={styles.backedRally}>{formatCurrency(backed.rally)} rallied</Text>
-            <Button label={`Rally for ${backed.name}`} icon="bullhorn-outline" onPress={() => !preview && rally(backed)} />
+            <Button label={`Rally for ${backed.name}`} icon="bullhorn-outline" onPress={() => !preview && setRally(rallyRequest(backed))} />
           </Card>
         ) : (
           <Body>Choose one of the teams playing Wine Survivor in person and follow them through every draw.</Body>
@@ -153,7 +138,7 @@ export function WineSurvivorGame({ data, preview = false, loading, isLive, onRef
                   <Text style={[styles.smallBtnText, isBacked && { color: colors.white }]}>{isBacked ? 'Backing' : 'Back'}</Text>
                 </Pressable>
                 <Pressable
-                  onPress={() => !preview && rally(t)}
+                  onPress={() => !preview && setRally(rallyRequest(t))}
                   accessibilityRole="button"
                   accessibilityLabel={`Rally for ${t.name}`}
                   style={styles.smallBtn}

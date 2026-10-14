@@ -1,0 +1,16 @@
+{
+  "active": false,
+  "edition": "Wine Survivor 4.0",
+  "nextDate": "Dates coming soon",
+  "nextDateNote": "Watch for an announcement on registration timelines.",
+  "infoUrl": "https://www.anyasjourney.com/winesurvivor/",
+  "updated": "October 14, 2026",
+  "tribes": [
+    { "id": "merlot", "name": "Merlot Mavericks", "status": "in", "rally": 0 },
+    { "id": "pinot", "name": "Pinot Pirates", "status": "in", "rally": 0 },
+    { "id": "cabernet", "name": "Cabernet Castaways", "status": "in", "rally": 0 }
+  ],
+  "draws": [
+    { "id": "draw-1", "label": "Draw 1", "date": "Monday 7 pm", "status": "open", "eliminated": [] }
+  ]
+}

@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
 import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Thermometer } from '@/components/Thermometer';
@@ -9,15 +10,20 @@ import { equipment, formatCurrency, type EquipmentItem } from '@/data/equipment'
 
 const open = (url: string) => WebBrowser.openBrowserAsync(url);
 
+// The donation sites don't let us fill in their message box, so we copy the
+// note for the donor to paste. PayPal does take the amount in its link.
 function sponsor(item: EquipmentItem) {
-  const message = `Thank you! Donate ${formatCurrency(item.price)} and add "${item.name}" in your donation note so we know what you're sponsoring.`;
+  const note = `Sponsoring: ${item.name}`;
+  Clipboard.setStringAsync(note).catch(() => {});
+  const payPal = `${config.donate.payPal}/${item.price}CAD`;
+  const message = `We've copied "${note}" for you. Paste it into the message box when you donate so the charity knows what you're sponsoring.`;
   if (Platform.OS === 'web') {
-    open(config.donate.canadaHelps);
+    open(payPal);
     return;
   }
-  Alert.alert(`Sponsor a ${item.name}`, message, [
+  Alert.alert(`Sponsor a ${item.name} · ${formatCurrency(item.price)}`, message, [
     { text: 'CanadaHelps', onPress: () => open(config.donate.canadaHelps) },
-    { text: 'PayPal', onPress: () => open(config.donate.payPal) },
+    { text: 'PayPal', onPress: () => open(payPal) },
     { text: 'GoFundMe', onPress: () => open(config.donate.goFundMe) },
   ], { cancelable: true });
 }
@@ -42,7 +48,10 @@ export default function DonateScreen() {
 
       <View style={styles.block}>
         <SectionHeading eyebrow="Sponsor equipment" title="Build the playground" />
-        <Body>Choose a piece of playground equipment to sponsor.</Body>
+        <Body>
+          Choose a piece of playground equipment to sponsor. We'll copy its name so you can paste it into your
+          donation message.
+        </Body>
         <Text style={styles.placeholder}>Items and prices shown are placeholders.</Text>
         {equipment.map((item) => (
           <Pressable

@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -14,13 +15,16 @@ const open = (url: string) => WebBrowser.openBrowserAsync(url);
 // Rally donations go through the same donation pages as the rest of the app;
 // the note tells the charity which tribe to credit.
 function rally(tribe: Tribe) {
+  const note = `Rally: ${tribe.name}`;
+  Clipboard.setStringAsync(note).catch(() => {});
+  const message = `Thank you! We've copied "${note}" for you. Paste it into the message box when you donate so we can count it toward their Rally Fund. Donations go to the Fuller Lake playground and never change the draw.`;
   if (Platform.OS === 'web') {
-    open(config.donate.goFundMe);
+    open(config.donate.payPal);
     return;
   }
   Alert.alert(
     `Rally for ${tribe.name}`,
-    `Thank you! Add "Rally: ${tribe.name}" in your donation note so we can count it toward their Rally Fund. Donations go to the Fuller Lake playground and never change the draw.`,
+    message,
     [
       { text: 'CanadaHelps', onPress: () => open(config.donate.canadaHelps) },
       { text: 'PayPal', onPress: () => open(config.donate.payPal) },

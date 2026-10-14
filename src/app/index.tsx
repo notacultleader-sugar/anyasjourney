@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Thermometer } from '@/components/Thermometer';
+import { SiteThermometer } from '@/components/SiteThermometer';
 import { Body, Button, Card, SectionHeading } from '@/components/ui';
 import { config } from '@/constants/config';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
@@ -69,7 +69,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.section}>
-        <Thermometer compact />
+        <SiteThermometer compact />
         <Button
           label="Help build the playground"
           icon="hand-heart"

@@ -15,7 +15,7 @@ Mobile app for [Anya's Journey Foundation](https://www.anyasjourney.com), built 
 ## Updating content without an app update
 
 - **Events:** edit `events.html` on the website as usual. The app shows the page live, with the site's own header and footer hidden.
-- **Thermometer:** upload `docs/fundraising.json` to `https://www.anyasjourney.com/app/fundraising.json` and change the numbers whenever the total moves. Until that file exists, the app shows the fallback in `src/constants/config.ts` and a "couldn't load" note.
+- **Thermometer:** the app shows the CauseVox thermometer from the website's homepage (the "Fundraising Goal" section), so updating it on the site updates the app. If the site can't be reached, the app falls back to its own thermometer, which reads `docs/fundraising.json` uploaded to `https://www.anyasjourney.com/app/fundraising.json`.
 
 ## Running Wine Survivor
 

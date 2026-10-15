@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { PlaygroundMap, type MapMessage, type PlaygroundMapHandle } from '@/components/PlaygroundMap';
+import { PlaceholderBanner, PlaceholderNotice } from '@/components/PlaceholderNotice';
 import { SampleMap } from '@/components/SampleMap';
 import { config } from '@/constants/config';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
@@ -214,12 +215,14 @@ export default function PlaygroundsScreen() {
         </View>
       </View>
 
-      {!user && !locating ? (
-        <Text style={styles.notice}>
-          {PREVIEW
-            ? 'Preview: sample playgrounds. The real app uses your location to find playgrounds near you.'
-            : 'Turn on location to see playgrounds near you. Showing the Cowichan Valley.'}
-        </Text>
+      {PREVIEW ? (
+        <View style={styles.placeholder}>
+          <PlaceholderBanner>
+            Placeholder: sample map and playgrounds while the playground finder is being developed.
+          </PlaceholderBanner>
+        </View>
+      ) : !user && !locating ? (
+        <Text style={styles.notice}>Turn on location to see playgrounds near you. Showing the Cowichan Valley.</Text>
       ) : null}
 
       <FlatList
@@ -298,6 +301,13 @@ export default function PlaygroundsScreen() {
           </View>
         }
       />
+      {PREVIEW ? (
+        <PlaceholderNotice
+          icon="map-marker-radius-outline"
+          title="Sample map"
+          body="This map and its playgrounds are placeholders while the accessible playground finder is being developed. The finished app will show real accessible playgrounds near you."
+        />
+      ) : null}
     </View>
   );
 }
@@ -347,6 +357,7 @@ const styles = StyleSheet.create({
   count: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.heading, flex: 1 },
   toggle: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   toggleLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
+  placeholder: { paddingHorizontal: spacing.md, paddingBottom: spacing.sm },
   notice: {
     fontFamily: fonts.body,
     fontSize: 13,
